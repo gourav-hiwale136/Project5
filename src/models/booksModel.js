@@ -5,17 +5,29 @@ const bookSchema = new mongoose.Schema(
     title: { type: String, required: true },
     author: { type: String, required: true },
     price: { type: Number, required: true },
-    image: { type: String, required: true},
+    image: { type: String },
+
     status: {
       type: String,
       enum: ["available", "sold"],
       default: "available",
-    }
+    },
+
+    seller: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    buyer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
   },
-  {
-    timestamps: true   
-  }
+  { timestamps: true }
 );
 
-const Book = mongoose.model("Book", bookSchema);
-export default Book;
+const Book =  mongoose.model("Book", bookSchema);
+
+export default Book

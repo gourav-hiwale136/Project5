@@ -1,11 +1,10 @@
 import Book from "../models/booksModel.js";
+import User from "../models/userModel.js";
 
-// SELL BOOK
 const sellBook = async (req, res) => {
   try {
-    const { title, author, price, image, seller } = req.body;
+    const { title, author, price, image } = req.body;
 
-    console.log("BODY:", req.body);
     if (!title || !author || !price || !image) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -15,18 +14,26 @@ const sellBook = async (req, res) => {
       author,
       price,
       image,
+      seller: req.user.id,
       status: "available",
     });
 
     await newBook.save();
-    res.status(201).json({ message: "Book listed for sale", book: newBook });
+
+    const seller = await User.findById(newBook.seller).select("Username Email");
+
+    res.status(201).json({
+      message: "Book listed for sale",
+      book: {
+        ...newBook.toObject(),
+        seller,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: "Error adding book", error: error.message });
   }
-
 };
 
-// BUY BOOK
 const buyBook = async (req, res) => {
   try {
     const book = await Book.findById(req.params.id);
@@ -37,30 +44,55 @@ const buyBook = async (req, res) => {
     }
 
     book.status = "sold";
+    book.buyer = req.user.id; // logged-in user becomes buyer
+
     await book.save();
 
-    res.status(200).json({ message: "Book purchased successfully", book });
+    // populate seller & buyer names
+    const populatedBook = await book
+      .populate("seller", "Username Email")
+      .populate("buyer", "Username Email");
+
+    res.status(200).json({
+      message: "Book purchased successfully",
+      book: populatedBook,
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
-// GET ALL AVAILABLE BOOKS
+
 const getAllbooks = async (req, res) => {
   try {
-    const books = await Book.find();
-    const availableBooks = books.filter((book) => book.status === "available");
-    res.status(200).json(availableBooks);
+    const books = await Book.find({ status: "available" });
+
+    const booksWithSeller = await Promise.all(
+      books.map(async (book) => {
+        const seller = await User.findById(book.seller).select("Username Email");
+        return { ...book.toObject(), seller };
+      })
+    );
+
+    res.status(200).json(booksWithSeller);
   } catch (error) {
     res.status(500).json({ message: "Error fetching books", error: error.message });
   }
 };
 
-// GET ALL SOLD BOOKS
 const soldAllbooks = async (req, res) => {
   try {
     const soldBooks = await Book.find({ status: "sold" });
-    res.status(200).json(soldBooks);
+
+    const booksWithUsers = await Promise.all(
+      soldBooks.map(async (book) => {
+        const seller = await User.findById(book.seller).select("Username Email");
+        const buyer = await User.findById(book.buyer).select("Username Email");
+        return { ...book.toObject(), seller, buyer };
+      })
+    );
+
+    res.status(200).json(booksWithUsers);
   } catch (error) {
     res.status(500).json({ message: "Error fetching sold books", error: error.message });
   }
