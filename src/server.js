@@ -14,10 +14,12 @@ app.use(express.json());
 app.use(cors());
 
 connectDB(process.env.MONGO_URL);
-
 app.use("/api/auth", userRouter);
 app.use("/api/customer", customerRouter);
 app.use("/api/book", bookRouter);
+app.get("/",(req,res) => {
+  res.send("Welcome to the Bookstore API");
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

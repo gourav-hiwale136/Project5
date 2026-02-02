@@ -6,7 +6,7 @@ const bookSchema = new mongoose.Schema(
     author: { type: String, required: true },
     price: { type: String, required: true },
     seller: { type: String, required: true },
-    buyer: { type: String, required: true },
+    buyer: { type: String, required: false },
     status: {
       type: String,
       enum: ["available", "sold"],

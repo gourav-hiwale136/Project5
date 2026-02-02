@@ -3,13 +3,14 @@ import booksModel from "../models/booksModel.js";
 
 const sellBook = async (req, res) => {
     try {
-        const { title, author, price, status } = req.body;
+        const { title, author, price, seller, buyer, status } = req.body;
         const newBook = new booksModel({
             title,
             author,
             price,
-            seller: req.user.id,
-            status:"available"
+            seller,
+            buyer,
+            status:  "available"
             
         });
         await newBook.save();
@@ -33,6 +34,16 @@ const buyBook = async (req, res) => {
     }
 };
 
-export { sellBook, buyBook}
 
+const getAllbooks = async (req, res) => {
+    try {
+        const books = await booksModel.find();
+        const availableBooks = books.fillter(book => book.status === "available");
+        return res.status(200).json(availableBooks);
+    } catch (error) {
+        return res.status(500).json({ message: "Error fetching books", error: error.message });
+    }
+}
+
+export { sellBook, buyBook, getAllbooks};
 

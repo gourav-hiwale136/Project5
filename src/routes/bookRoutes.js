@@ -1,11 +1,12 @@
 import express from "express";
-import { sellBook, buyBook } from "../controllers/bookController.js";
+import { sellBook, buyBook, getAllbooks } from "../controllers/bookController.js";
 
 
 const bookRouter = express.Router();
 
 
 bookRouter.post("/sell", sellBook);
-bookRouter.get("/buy", buyBook);
+bookRouter.get("/buy/:id", buyBook);
+bookRouter.get("/getAll", getAllbooks);
 
 export default bookRouter
