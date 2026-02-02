@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import userRouter from "./routes/authRoutes.js";
-import customerRouter from "./routes/customerRoutes.js";
+// import customerRouter from "./routes/customerRoutes.js";
 import bookRouter from "./routes/bookRoutes.js";
 
 dotenv.config();
@@ -15,7 +15,7 @@ app.use(cors());
 
 connectDB(process.env.MONGO_URL);
 app.use("/api/auth", userRouter);
-app.use("/api/customer", customerRouter);
+// app.use("/api/customer", customerRouter);
 app.use("/api/book", bookRouter);
 app.get("/",(req,res) => {
   res.send("Welcome to the Bookstore API");
