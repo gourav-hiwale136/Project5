@@ -9,6 +9,6 @@ const bookRouter = express.Router();
 bookRouter.post("/sold", authMiddleware,sellBook);
 bookRouter.get("/buy/:id", authMiddleware,buyBook);
 bookRouter.get("/getAll", getAllbooks);
-bookRouter.get("/soldAll", soldAllbooks);
+bookRouter.post("/soldAll", soldAllbooks);
 
 export default bookRouter
