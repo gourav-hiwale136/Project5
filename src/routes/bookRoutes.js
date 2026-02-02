@@ -1,12 +1,14 @@
 import express from "express";
-import { sellBook, buyBook, getAllbooks } from "../controllers/bookController.js";
+import { sellBook, buyBook, getAllbooks, soldAllbooks } from "../controllers/bookController.js";
+import authMiddleware from "../middlewares/authmiddleware.js"; 
 
 
 const bookRouter = express.Router();
 
 
-bookRouter.post("/sell", sellBook);
-bookRouter.get("/buy/:id", buyBook);
+bookRouter.post("/sold", authMiddleware,sellBook);
+bookRouter.get("/buy/:id", authMiddleware,buyBook);
 bookRouter.get("/getAll", getAllbooks);
+bookRouter.get("/soldAll", soldAllbooks);
 
 export default bookRouter

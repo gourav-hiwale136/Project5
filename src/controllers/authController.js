@@ -19,7 +19,7 @@ const register = async (req, res) => {
       Password: hashedPassword,
       Address,
       Contact,
-      Role
+      Role: Role || "salesUser"
     });
 
     res.status(201).json({
@@ -56,6 +56,7 @@ const login = async (req, res) => {
       user: {
         id: user._id,
         Username: user.Username,
+        Email: user.Email,
         Role: user.Role
       }
     });

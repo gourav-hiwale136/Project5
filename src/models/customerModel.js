@@ -2,13 +2,13 @@ import mongoose from "mongoose";
 
 const customerSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
+    username: { type: String, required: true },
     email: { type: String, required: true },
     contact: String,
     status: {
       type: String,
-      enum: ["New", "Contacted", "Qualified", "Lost"],
-      default: "New"
+      enum: ["new", "contacted", "qualified", "lost"],
+      default: "new"
     },
     assignedTo: {
       type: mongoose.Schema.Types.ObjectId,

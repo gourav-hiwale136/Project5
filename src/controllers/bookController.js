@@ -1,49 +1,66 @@
-import booksModel from "../models/booksModel.js";
+import Book from "../models/booksModel.js";
 
-
+// SELL BOOK
 const sellBook = async (req, res) => {
-    try {
-        const { title, author, price, seller, buyer, status } = req.body;
-        const newBook = new booksModel({
-            title,
-            author,
-            price,
-            seller,
-            buyer,
-            status:  "available"
-            
-        });
-        await newBook.save();
-        res.status(201).json({ message: "Book For Sell", book: newBook });
-    } catch (error) {
-        res.status(500).json({ message: "Error adding book", error: error.message });
+  try {
+    const { title, author, price, seller } = req.body;
+
+    if (!title || !author || !price || !seller) {
+      return res.status(400).json({ message: "All fields are required" });
     }
+
+    const newBook = new Book({
+      title,
+      author,
+      price,
+      status: "available",
+    });
+
+    await newBook.save();
+    res.status(201).json({ message: "Book listed for sale", book: newBook });
+  } catch (error) {
+    res.status(500).json({ message: "Error adding book", error: error.message });
+  }
 };
 
+// BUY BOOK
 const buyBook = async (req, res) => {
-    try {
-        const books = await booksModel.findById(req.params.id);
-        if (!books) {
-            return res.status(404).json({ message: "Book not found" });
-        }
-        
-        
-    
-    } catch (error) {
-        res.status(500).json({ message : "the server issus", error: error.message})
+  try {
+    const book = await Book.findById(req.params.id);
+    if (!book) return res.status(404).json({ message: "Book not found" });
+
+    if (book.status === "sold") {
+      return res.status(400).json({ message: "Book already sold" });
     }
+
+    book.status = "sold";
+    await book.save();
+
+    res.status(200).json({ message: "Book purchased successfully", book });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 };
 
-
+// GET ALL AVAILABLE BOOKS
 const getAllbooks = async (req, res) => {
-    try {
-        const books = await booksModel.find();
-        const availableBooks = books.fillter(book => book.status === "available");
-        return res.status(200).json(availableBooks);
-    } catch (error) {
-        return res.status(500).json({ message: "Error fetching books", error: error.message });
-    }
-}
+  try {
+    const books = await Book.find();
+    const availableBooks = books.filter((book) => book.status === "available");
+    res.status(200).json(availableBooks);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching books", error: error.message });
+  }
+};
 
-export { sellBook, buyBook, getAllbooks};
+// GET ALL SOLD BOOKS
+const soldAllbooks = async (req, res) => {
+  try {
+    const soldBooks = await Book.find({ status: "sold" });
+    res.status(200).json(soldBooks);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching sold books", error: error.message });
+  }
+};
 
+export { sellBook, buyBook, getAllbooks, soldAllbooks };
