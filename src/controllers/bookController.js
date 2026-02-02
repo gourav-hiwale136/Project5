@@ -3,9 +3,10 @@ import Book from "../models/booksModel.js";
 // SELL BOOK
 const sellBook = async (req, res) => {
   try {
-    const { title, author, price, seller } = req.body;
+    const { title, author, price, image, seller } = req.body;
 
-    if (!title || !author || !price || !seller) {
+    console.log("BODY:", req.body);
+    if (!title || !author || !price || !image) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -13,6 +14,7 @@ const sellBook = async (req, res) => {
       title,
       author,
       price,
+      image,
       status: "available",
     });
 
@@ -21,6 +23,7 @@ const sellBook = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Error adding book", error: error.message });
   }
+
 };
 
 // BUY BOOK
