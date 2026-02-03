@@ -93,7 +93,7 @@ const getAllbooks = async (req, res) => {
         message: "Status is required",
       });
     }
-
+  
     const updatedBook = await Book.findByIdAndUpdate(
       id,
       { status },
@@ -117,6 +117,6 @@ const getAllbooks = async (req, res) => {
     });
   }
 
-
+ }
 
 export { sellBook, buyBook, getAllbooks, updateBookStatus };
