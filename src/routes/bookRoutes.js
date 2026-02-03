@@ -16,7 +16,7 @@ bookRouter.get("/buy/:id", authMiddleware, buyBook);
 
 bookRouter.get("/getAll", getAllbooks);
 
-bookRouter.put("/updateStatus/:id/:status", updateBookStatus);
+bookRouter.put("/updateStatus/:id", updateBookStatus);
 
 
 

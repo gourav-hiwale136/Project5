@@ -40,7 +40,7 @@ const buyBook = async (req, res) => {
     if (!book) return res.status(404).json({ message: "Book not found" });
 
     if (book.status === "sold") {
-      return res.status(400).json({ message: "Book already sold" });
+      return res.status(400).json({ message: "Book already sold", book });
     }
 
     book.status = "sold";
@@ -83,18 +83,39 @@ const getAllbooks = async (req, res) => {
   }
 };
 
-const updateBookStatus = async (bookId, status) => {
+ const updateBookStatus = async (req, res) => {
   try {
-    const book = await Book.findById(bookId);
-    if (!book) res.status(404).json({ message: "Book not found" });
-    book.status = status;
-    await book.save();
+    const { id } = req.params;
+    const { status } = req.body;
 
+    if (!status) {
+      return res.status(400).json({
+        message: "Status is required",
+      });
+    }
+
+    const updatedBook = await Book.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+
+    if (!updatedBook) {
+      return res.status(404).json({
+        message: "Book not found",
+      });
+    }
+
+    res.status(200).json({
+      message: "Book status updated successfully",
+      book: updatedBook,
+    });
   } catch (error) {
-    return res.status(500).json({ message: "Error updating book status", error: error.message });
-    
+    res.status(500).json({
+      message: "Error updating book status",
+      error: error.message,
+    });
   }
-}
 
 
 
