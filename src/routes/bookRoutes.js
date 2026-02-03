@@ -5,6 +5,8 @@ import {
   getAllbooks,
   updateBookStatus,
   allSoldedBooks,
+  inventoryByBuyer,
+  
 } from "../controllers/bookController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 
@@ -20,6 +22,10 @@ bookRouter.get("/getAll", getAllbooks);
 bookRouter.put("/updateStatus/:id", updateBookStatus);
 
 bookRouter.get("/allSoldBooks", allSoldedBooks);
+
+bookRouter.post("/inventoryByBuyer", authMiddleware, inventoryByBuyer);
+
+
 
 
 

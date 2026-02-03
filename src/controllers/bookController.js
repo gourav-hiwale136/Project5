@@ -167,8 +167,27 @@ const allSoldedBooks = async (req, res) => {
   } catch (error) {
     
   }
-}
+};
+
+
+const inventoryByBuyer = async (req, res) => {
+  try {
+    const buyerId = req.user.id; 
+
+    const books = await Book.find({
+      buyer: buyerId,
+      status: "sold",
+    });
+
+    res.status(200).json({total: books.length, books,});
+  } catch (error) {
+    res.status(500).json({message: "Error fetching buyer inventory",error: error.message,});
+  }
+};
 
 
 
-export { sellBook, buyBook, getAllbooks, updateBookStatus, allSoldedBooks };
+
+
+export { sellBook, buyBook, getAllbooks, updateBookStatus, allSoldedBooks, inventoryByBuyer };  
+

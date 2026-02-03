@@ -11,7 +11,8 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["admin", "User"],
       default: "User"
-    }
+    },
+    Inventory:[]
   },
   { timestamps: true }
 );
