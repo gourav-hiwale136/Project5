@@ -1,5 +1,7 @@
 import Book from "../models/booksModel.js";
 import User from "../models/userModel.js";
+import mongoose from "mongoose";
+
 
 const sellBook = async (req, res) => {
   try {
@@ -131,57 +133,49 @@ const getAllbooks = async (req, res) => {
 
 const allSoldedBooks = async (req, res) => {
   try {
-    const books = await Book.find({ status: "sold" });
+    // Populate seller and buyer details
+    const books = await Book.find({ status: "sold" })
+      .populate("seller", "Username Email")
+      .populate("buyer", "Username Email");
 
-    const result = [];
-
-    for (let book of books) {
-      const seller = await User.findById(book.seller);
-      const buyer = await User.findById(book.buyer);
-
-      result.push({
-        _id: book._id,
-        title: book.title,
-        author: book.author,
-        price: book.price,
-        image: book.image,
-        status: book.status,
-        seller: seller
-          ? {
-              _id: seller._id,
-              Username: seller.Username,
-              Email: seller.Email,
-            }
-          : null,
-        buyer: buyer
-          ? {
-              _id: buyer._id,
-              Username: buyer.Username,
-              Email: buyer.Email,
-            }
-          : null,
-      });
-    }
-
-    res.status(200).json(result);
+    res.status(200).json(books);
   } catch (error) {
-    
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 };
+;
 
 
-const inventoryByBuyer = async (req, res) => {
+
+
+  const addBookToInventory = async (req, res) => {
   try {
-    const buyerId = req.user.id; 
+    const { id } = req.params;
+    const book = await Book.findById(id);
+    if (!book) return res.status(404).json({ message: "Book not found" });
 
-    const books = await Book.find({
-      buyer: buyerId,
-      status: "sold",
-    });
+    if (book.status === "sold")
+      return res.status(400).json({ message: "Book already In Inventory" });
 
-    res.status(200).json({total: books.length, books,});
+    book.status = "sold";
+    book.buyer = req.user._id;
+    await book.save();
+
+    res.status(200).json({ message: "Book Added To Inventory", book });
   } catch (error) {
-    res.status(500).json({message: "Error fetching buyer inventory",error: error.message,});
+    res.status(500).json({ message: "Error purchasing book", error: error.message });
+  }
+};
+
+ const getInventoryByUser = async (req, res) => {
+  try {
+    const books = await Book.find({ buyer: req.user._id, status: "sold" })
+      .populate("seller", "Username Email");
+
+    res.status(200).json({ totalInventoryBooks: books.length, books });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching purchased books", error: error.message });
   }
 };
 
@@ -189,5 +183,5 @@ const inventoryByBuyer = async (req, res) => {
 
 
 
-export { sellBook, buyBook, getAllbooks, updateBookStatus, allSoldedBooks, inventoryByBuyer };  
 
+export { sellBook, buyBook, getAllbooks, updateBookStatus, allSoldedBooks, addBookToInventory, getInventoryByUser };  

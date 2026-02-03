@@ -9,7 +9,7 @@ const bookSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["available", "sold", "buyed", "not available"],
+      enum: ["available", "sold", "not available"],
       default: "available",
     },
 
@@ -28,6 +28,5 @@ const bookSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const Book =  mongoose.model("Book", bookSchema);
-
-export default Book
+const Book = mongoose.model("Book", bookSchema);
+export default Book;
