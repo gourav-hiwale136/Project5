@@ -3,7 +3,7 @@ import {
   sellBook,
   buyBook,
   getAllbooks,
-  soldAllbooks,
+  updateBookStatus,
 } from "../controllers/bookController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 
@@ -16,6 +16,8 @@ bookRouter.get("/buy/:id", authMiddleware, buyBook);
 
 bookRouter.get("/getAll", getAllbooks);
 
-bookRouter.get("/soldAll", soldAllbooks);
+bookRouter.put("/updateStatus/:id/:status", updateBookStatus);
+
+
 
 export default bookRouter;
