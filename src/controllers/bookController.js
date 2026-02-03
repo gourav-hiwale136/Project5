@@ -68,47 +68,57 @@ const buyBook = async (req, res) => {
 
 const getAllbooks = async (req, res) => {
   try {
-    const books = await Book.find({ status: "available" });
+    const books = await Book.find();
 
-    const booksWithSeller = await Promise.all(
-      books.map(async (book) => {
-        const seller = await User.findById(book.seller).select("Username Email");
-        return { ...book.toObject(), seller };
-      })
-    );
+    const result = [];
 
-    res.status(200).json(booksWithSeller);
+    for (let book of books) {
+      const seller = await User.findById(book.seller);
+
+      result.push({
+        _id: book._id,
+        title: book.title,
+        author: book.author,
+        price: book.price,
+        image: book.image,
+        status: book.status,
+        seller: seller
+          ? {
+              _id: seller._id,
+              Username: seller.Username,
+              Email: seller.Email,
+            }
+          : null,
+        buyer: book.buyer, 
+      });
+    }
+
+    res.status(200).json(result);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching books", error: error.message });
+    res.status(500).json({
+      message: "Error fetching books",
+      error: error.message,
+    });
   }
 };
+
 
  const updateBookStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
 
-    if (!status) {
-      return res.status(400).json({
-        message: "Status is required",
-      });
+    const book = await Book.findById(id);
+    if (!book) {
+      return res.status(404).json({ message: "Book not found" });
     }
 
-    const updatedBook = await Book.findByIdAndUpdate(
-      id,
-      { status },
-      { new: true }
-    );
-
-    if (!updatedBook) {
-      return res.status(404).json({
-        message: "Book not found",
-      });
-    }
+    book.status = status;
+    await book.save();
 
     res.status(200).json({
-      message: "Book status updated successfully",
-      book: updatedBook,
+      message: "Book status updated",
+      book,
     });
   } catch (error) {
     res.status(500).json({
@@ -116,6 +126,7 @@ const getAllbooks = async (req, res) => {
       error: error.message,
     });
   }
+};
 
 
 
