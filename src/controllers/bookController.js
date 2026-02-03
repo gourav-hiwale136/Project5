@@ -36,6 +36,7 @@ const sellBook = async (req, res) => {
 
 const buyBook = async (req, res) => {
   try {
+    
     const book = await Book.findById(req.params.id);
     if (!book) return res.status(404).json({ message: "Book not found" });
 
@@ -44,7 +45,7 @@ const buyBook = async (req, res) => {
     }
 
     book.status = "sold";
-    book.buyer = req.user.id;
+    book.buyer = req.user.id; 
 
     await book.save();
 
@@ -128,6 +129,46 @@ const getAllbooks = async (req, res) => {
   }
 };
 
+const allSoldedBooks = async (req, res) => {
+  try {
+    const books = await Book.find({ status: "sold" });
+
+    const result = [];
+
+    for (let book of books) {
+      const seller = await User.findById(book.seller);
+      const buyer = await User.findById(book.buyer);
+
+      result.push({
+        _id: book._id,
+        title: book.title,
+        author: book.author,
+        price: book.price,
+        image: book.image,
+        status: book.status,
+        seller: seller
+          ? {
+              _id: seller._id,
+              Username: seller.Username,
+              Email: seller.Email,
+            }
+          : null,
+        buyer: buyer
+          ? {
+              _id: buyer._id,
+              Username: buyer.Username,
+              Email: buyer.Email,
+            }
+          : null,
+      });
+    }
+
+    res.status(200).json(result);
+  } catch (error) {
+    
+  }
+}
 
 
-export { sellBook, buyBook, getAllbooks, updateBookStatus };
+
+export { sellBook, buyBook, getAllbooks, updateBookStatus, allSoldedBooks };
