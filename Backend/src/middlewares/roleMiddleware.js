@@ -1,8 +1,12 @@
-const allowRoles = (...Roles) => {
+// middlewares/roleMiddleware.js
+const allowRoles = (...roles) => {
   return (req, res, next) => {
-    if (!Roles.includes(req.user.Role)) {
-      return res.status(403).json({ message: "Access denied" });
-    };
+    if (!roles.includes(req.user.Role)) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
     next();
   };
 };

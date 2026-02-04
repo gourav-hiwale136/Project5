@@ -1,14 +1,32 @@
+// controllers/bookController.js
 import Book from "../models/booksModel.js";
 import User from "../models/userModel.js";
 import mongoose from "mongoose";
 
-
+// SELL BOOK
 const sellBook = async (req, res) => {
   try {
     const { title, author, price, image } = req.body;
 
     if (!title || !author || !price || !image) {
-      return res.status(400).json({ message: "All fields are required" });
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    // Prevent duplicate sold books with same title/author
+    const soldBook = await Book.findOne({
+      title,
+      author,
+      status: "sold",
+    });
+
+    if (soldBook) {
+      return res.status(400).json({
+        success: false,
+        message: `"${title}" by ${author} is already sold!`,
+      });
     }
 
     const newBook = new Book({
@@ -22,32 +40,40 @@ const sellBook = async (req, res) => {
 
     await newBook.save();
 
-    const seller = await User.findById(newBook.seller).select("Username Email");
-
     res.status(201).json({
+      success: true,
       message: "Book listed for sale",
-      book: {
-        ...newBook.toObject(),
-        seller,
-      },
+      book: newBook,
     });
   } catch (error) {
-    res.status(500).json({ message: "Error adding book", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Error adding book",
+    });
   }
 };
 
+// BUY BOOK (simple route)
 const buyBook = async (req, res) => {
   try {
-    
     const book = await Book.findById(req.params.id);
-    if (!book) return res.status(404).json({ message: "Book not found" });
+    if (!book) {
+      return res.status(404).json({
+        success: false,
+        message: "Book not found",
+      });
+    }
 
     if (book.status === "sold") {
-      return res.status(400).json({ message: "Book already sold", book });
+      return res.status(400).json({
+        success: false,
+        message: "Book already sold",
+        book,
+      });
     }
 
     book.status = "sold";
-    book.buyer = req.user.id; 
+    book.buyer = req.user.id;
 
     await book.save();
 
@@ -57,131 +83,198 @@ const buyBook = async (req, res) => {
     ]);
 
     res.status(200).json({
+      success: true,
       message: "Book purchased successfully",
       book: populatedBook,
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Server error",
-      error: error.message,
     });
   }
 };
 
-
-const getAllbooks = async (req, res) => {
+// GET ALL BOOKS
+const getAllBooks = async (req, res) => {
   try {
-    const books = await Book.find();
+    const books = await Book.find()
+      .populate("seller", "Username Email")
+      .populate("buyer", "Username Email");
 
-    const result = [];
-
-    for (let book of books) {
-      const seller = await User.findById(book.seller);
-
-      result.push({
-        _id: book._id,
-        title: book.title,
-        author: book.author,
-        price: book.price,
-        image: book.image,
-        status: book.status,
-        seller: seller
-          ? {
-              _id: seller._id,
-              Username: seller.Username,
-              Email: seller.Email,
-            }
-          : null,
-        buyer: book.buyer, 
-      });
-    }
-
-    res.status(200).json(result);
+    res.status(200).json({
+      success: true,
+      data: books,
+    });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Error fetching books",
-      error: error.message,
     });
   }
 };
 
-
- const updateBookStatus = async (req, res) => {
+// UPDATE BOOK STATUS (admin)
+const updateBookStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
 
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        message: "Status is required",
+      });
+    }
+
     const book = await Book.findById(id);
     if (!book) {
-      return res.status(404).json({ message: "Book not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Book not found",
+      });
     }
 
     book.status = status;
     await book.save();
 
     res.status(200).json({
+      success: true,
       message: "Book status updated",
       book,
     });
   } catch (error) {
     res.status(500).json({
+      success: false,
       message: "Error updating book status",
-      error: error.message,
     });
   }
 };
 
-const allSoldedBooks = async (req, res) => {
+// GET ALL SOLD BOOKS (admin)
+const allSoldBooks = async (req, res) => {
   try {
-    // Populate seller and buyer details
     const books = await Book.find({ status: "sold" })
       .populate("seller", "Username Email")
       .populate("buyer", "Username Email");
 
-    res.status(200).json(books);
+    res.status(200).json({
+      success: true,
+      data: books,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
   }
 };
-;
 
-
-
-
-  const addBookToInventory = async (req, res) => {
+// ADD BOOK TO INVENTORY (buy + add to user’s inventory)
+const addBookToInventory = async (req, res) => {
   try {
     const { id } = req.params;
+
     const book = await Book.findById(id);
-    if (!book) return res.status(404).json({ message: "Book not found" });
+    if (!book) {
+      return res.status(404).json({
+        success: false,
+        message: "Book not found",
+      });
+    }
 
-    if (book.status === "sold")
-      return res.status(400).json({ message: "Book already In Inventory" });
+    if (book.status === "sold") {
+      return res.status(400).json({
+        success: false,
+        message: "Book already sold",
+      });
+    }
 
+    if (book.seller.toString() === req.user._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: "You cannot buy your own book",
+      });
+    }
+
+    // Mark as sold
     book.status = "sold";
     book.buyer = req.user._id;
     await book.save();
 
-    res.status(200).json({ message: "Book Added To Inventory", book });
+    // Add to user’s inventory
+    const user = await User.findById(req.user._id);
+    user.inventory.push(book._id);
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Book added to inventory",
+      book,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error purchasing book", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Error purchasing book",
+    });
   }
 };
 
- const getInventoryByUser = async (req, res) => {
+// GET USER INVENTORY
+const getInventoryByUser = async (req, res) => {
   try {
-    const books = await Book.find({ buyer: req.user._id, status: "sold" })
-      .populate("seller", "Username Email");
+    const books = await Book.find({
+      buyer: req.user._id,
+      status: "sold",
+    }).populate("seller", "Username Email");
 
-    res.status(200).json({ totalInventoryBooks: books.length, books });
+    res.status(200).json({
+      success: true,
+      totalInventoryBooks: books.length,
+      data: books,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error fetching purchased books", error: error.message });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching purchased books",
+    });
   }
 };
 
+// DELETE BOOK (admin)
+const deleteBook = async (req, res) => {
+  try {
+    const { id } = req.params;
 
+    const book = await Book.findById(id);
+    if (!book) {
+      return res.status(404).json({
+        success: false,
+        message: "Book not found",
+      });
+    }
 
+    await Book.findByIdAndDelete(id);
 
+    res.status(200).json({
+      success: true,
+      message: "Book deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+};
 
-
-export { sellBook, buyBook, getAllbooks, updateBookStatus, allSoldedBooks, addBookToInventory, getInventoryByUser };  
+export {
+  sellBook,
+  buyBook,
+  getAllBooks,
+  updateBookStatus,
+  allSoldBooks,
+  addBookToInventory,
+  getInventoryByUser,
+  deleteBook,
+};

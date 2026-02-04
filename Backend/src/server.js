@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import userRouter from "./routes/authRoutes.js";
 import bookRouter from "./routes/bookRoutes.js";
+import adminRouter from "./routes/adminRoutes.js";
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ connectDB(process.env.MONGO_URL);
 
 app.use("/api/auth", userRouter);
 app.use("/api/book", bookRouter);
+app.use("/api/admin", adminRouter);
 
 // app.get("/",(req,res) => {
 //   res.send("Welcome to the Bookstore API");

@@ -12,7 +12,13 @@ const userSchema = new mongoose.Schema(
       enum: ["admin", "User"],
       default: "User"
     },
-    Inventory:[]
+    inventory: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Book"
+  }
+]
+
   },
   { timestamps: true }
 );
