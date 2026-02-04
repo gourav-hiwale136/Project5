@@ -1,8 +1,8 @@
-const allowRoles = (...roles) => {
+const allowRoles = (...Roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
+    if (!Roles.includes(req.user.Role)) {
       return res.status(403).json({ message: "Access denied" });
-    }
+    };
     next();
   };
 };

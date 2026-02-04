@@ -10,7 +10,8 @@ import {
   
 } from "../controllers/bookController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
-import { get } from "mongoose";
+// import { get } from "mongoose";
+import allowRoles from "../middlewares/roleMiddleware.js";
 
 const bookRouter = express.Router();
 
@@ -21,9 +22,9 @@ bookRouter.get("/buy/:id", authMiddleware, buyBook);
 
 bookRouter.get("/getAll",  authMiddleware, getAllbooks);
 
-bookRouter.put("/updateStatus/:id", authMiddleware,updateBookStatus);
+bookRouter.put("/updateStatus/:id", authMiddleware,allowRoles("admin"),updateBookStatus);
 
-bookRouter.get("/allSoldBooks", authMiddleware, allSoldedBooks);
+bookRouter.get("/allSoldBooks", authMiddleware,allowRoles("admin"), allSoldedBooks);
 
 bookRouter.post("/inventory/add/:id", authMiddleware, addBookToInventory);
 
