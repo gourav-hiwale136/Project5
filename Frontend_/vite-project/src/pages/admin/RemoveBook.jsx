@@ -1,7 +1,5 @@
-// src/pages/admin/RemoveBook.jsx
 import { useState, useEffect } from "react";
-import api from "../../api/api.js";
-
+import { bookAPI } from "../../api/api";
 
 export default function RemoveBook() {
   const [books, setBooks] = useState([]);
@@ -10,7 +8,7 @@ export default function RemoveBook() {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const res = await api.get("/api/book/getAll");
+        const res = await bookAPI.getAll();
         setBooks(res.data);
       } catch (err) {
         console.error("Failed to load books:", err);
@@ -24,7 +22,7 @@ export default function RemoveBook() {
   const handleDelete = async (bookId) => {
     if (!window.confirm("Are you sure you want to remove this book?")) return;
     try {
-      await api.delete(`/api/book/${bookId}`); // adjust if your backend has a delete route
+      await bookAPI.remove(bookId);
       setBooks((prev) => prev.filter((b) => b._id !== bookId));
     } catch (err) {
       alert(err.response?.data?.message || "Delete failed");

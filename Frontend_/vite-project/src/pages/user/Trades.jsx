@@ -11,21 +11,22 @@ export default function Trades() {
   }, []);
 
   const fetchTrades = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await bookAPI.allSold();  // GET /api/book/allSoldBooks
-      const data = Array.isArray(res.data) ? res.data : [];
-      console.log("Trades API response:", res.data);
-      setTrades(data);
-    } catch (err) {
-      console.error("Trades error:", err);
-      setError("Failed to load trades");
-      setTrades([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    setError("");
+    const res = await bookAPI.allSold();
+    const data = Array.isArray(res) ? res : [];  // ✅ FIXED: res, not res.data
+    console.log("Trades API response:", res);
+    setTrades(data);
+  } catch (err) {
+    console.error("Trades error:", err);
+    setError("Failed to load trades");
+    setTrades([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   if (loading) {
     return (

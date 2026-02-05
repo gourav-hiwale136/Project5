@@ -1,13 +1,12 @@
-// src/pages/admin/Dashboard.jsx
 import { useState, useEffect } from "react";
-import api from "../../api/api";
+import { bookAPI } from "../../api/api";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalBooks: 0,
     totalSoldBooks: 0,
-    totalTrades: 0
+    totalTrades: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -18,17 +17,17 @@ export default function AdminDashboard() {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      // Try to fetch real stats, fallback to demo data
+
       const [booksRes, soldRes] = await Promise.all([
-        api.get("/api/book/getAll").catch(() => ({ data: [] })),
-        api.get("/api/book/allSoldBooks").catch(() => ({ data: [] }))
+        bookAPI.getAll().catch(() => ({ data: [] })),
+        bookAPI.allSold().catch(() => ({ data: [] })),
       ]);
-      
+
       setStats({
         totalUsers: 125,
         totalBooks: booksRes.data.length || 0,
         totalSoldBooks: soldRes.data.length || 0,
-        totalTrades: Math.floor(Math.random() * 50) + 10
+        totalTrades: Math.floor(Math.random() * 50) + 10,
       });
     } catch (err) {
       console.error("Stats error:", err);
@@ -114,15 +113,24 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-2xl p-8 shadow-xl border border-gray-100">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <a href="/admin/publish" className="group bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-center">
+                <Link
+                  to="/admin/publish"
+                  className="group bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-center"
+                >
                   <div className="text-3xl mb-2">📚</div>
                   <div className="font-semibold">Publish Book</div>
-                </a>
-                <a href="/admin/remove" className="group bg-gradient-to-r from-red-500 to-red-600 text-white p-6 rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-center">
+                </Link>
+                <Link
+                  to="/admin/remove"
+                  className="group bg-gradient-to-r from-red-500 to-red-600 text-white p-6 rounded-xl hover:from-red-600 hover:to-red-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1 text-center"
+                >
                   <div className="text-3xl mb-2">🗑️</div>
                   <div className="font-semibold">Remove Book</div>
-                </a>
-                <button onClick={fetchStats} className="group bg-gradient-to-r from-emerald-500 to-emerald-600 text-white p-6 rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                </Link>
+                <button
+                  onClick={fetchStats}
+                  className="group bg-gradient-to-r from-emerald-500 to-emerald-600 text-white p-6 rounded-xl hover:from-emerald-600 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                >
                   <div className="text-3xl mb-2">🔄</div>
                   <div className="font-semibold">Refresh Stats</div>
                 </button>

@@ -1,4 +1,3 @@
-// controllers/bookController.js
 import Book from "../models/booksModel.js";
 import User from "../models/userModel.js";
 import mongoose from "mongoose";
@@ -15,7 +14,6 @@ const sellBook = async (req, res) => {
       });
     }
 
-    // Prevent duplicate sold books with same title/author
     const soldBook = await Book.findOne({
       title,
       author,
@@ -95,17 +93,14 @@ const buyBook = async (req, res) => {
   }
 };
 
-// GET ALL BOOKS
+// GET ALL BOOKS (returns array directly)
 const getAllBooks = async (req, res) => {
   try {
     const books = await Book.find()
       .populate("seller", "Username Email")
       .populate("buyer", "Username Email");
 
-    res.status(200).json({
-      success: true,
-      data: books,
-    });
+    res.status(200).json(books); // ← plain array, not { success, data }
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -158,10 +153,7 @@ const allSoldBooks = async (req, res) => {
       .populate("seller", "Username Email")
       .populate("buyer", "Username Email");
 
-    res.status(200).json({
-      success: true,
-      data: books,
-    });
+    res.status(200).json(books); // ← plain array
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -197,12 +189,10 @@ const addBookToInventory = async (req, res) => {
       });
     }
 
-    // Mark as sold
     book.status = "sold";
     book.buyer = req.user._id;
     await book.save();
 
-    // Add to user’s inventory
     const user = await User.findById(req.user._id);
     user.inventory.push(book._id);
     await user.save();
@@ -228,11 +218,7 @@ const getInventoryByUser = async (req, res) => {
       status: "sold",
     }).populate("seller", "Username Email");
 
-    res.status(200).json({
-      success: true,
-      totalInventoryBooks: books.length,
-      data: books,
-    });
+    res.status(200).json(books); // ← plain array
   } catch (error) {
     res.status(500).json({
       success: false,

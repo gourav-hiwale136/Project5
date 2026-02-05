@@ -12,19 +12,20 @@ export default function Gallery() {
   }, []);
 
   const fetchBooks = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await bookAPI.getAll();
-      const data = Array.isArray(res.data) ? res.data : [];
-      setBooks(data);
-    } catch (err) {
-      setError("Failed to load books. Check backend on port 5555.");
-      setBooks([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    setError("");
+    const res = await bookAPI.getAll();
+    const data = Array.isArray(res.data) ? res.data : [];  // ✅ FIXED: res, not res.data
+    setBooks(data);
+  } catch (err) {
+    setError("Failed to load books. Check backend on port 5555.");
+    setBooks([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleBuy = async (bookId) => {
     try {

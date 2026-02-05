@@ -47,7 +47,7 @@ export default function Signup() {
             <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
               Create Account
             </h1>
-            <p className="text-gray-600 mt-2">Join BookTrade Pro today</p>
+            <p className="text-gray-600 mt-2">Join BookStore Today</p>
           </div>
 
           {error && (

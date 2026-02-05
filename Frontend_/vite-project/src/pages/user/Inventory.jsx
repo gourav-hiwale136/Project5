@@ -11,23 +11,22 @@ export default function Inventory() {
   }, []);
 
   const fetchInventory = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await bookAPI.inventory();
-      
-      // 🔧 FIX: Ensure ALWAYS array
-      const data = Array.isArray(res.data) ? res.data : [];
-      console.log("Inventory API response:", res.data); // DEBUG
-      setInventory(data);
-    } catch (err) {
-      console.error("Inventory error:", err);
-      setError("Failed to load inventory");
-      setInventory([]); // Always array!
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+    setError("");
+    const res = await bookAPI.inventory();
+    const data = Array.isArray(res) ? res : [];  // ✅ FIXED: res, not res.data
+    console.log("Inventory API response:", res);
+    setInventory(data);
+  } catch (err) {
+    console.error("Inventory error:", err);
+    setError("Failed to load inventory");
+    setInventory([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // 🔧 SAFE MAP: Only if array AND has length
   const renderBooks = () => {

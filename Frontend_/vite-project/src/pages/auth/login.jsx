@@ -24,6 +24,7 @@ export default function Login() {
     try {
       const res = await authAPI.login(formData);
       localStorage.setItem("Token", res.data.token);
+      alert("✅ Login successful!");
       navigate("/gallery");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
